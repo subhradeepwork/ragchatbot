@@ -6,3 +6,7 @@ python-dotenv
 langchain==0.1.14
 langchain-community==0.0.30
 langchain-openai
+fastapi
+uvicorn[standard]
+gradio
+python-multipart
