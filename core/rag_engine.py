@@ -1,5 +1,6 @@
 
 import os
+import re
 from dotenv import load_dotenv
 from langchain.vectorstores import FAISS
 from langchain.embeddings import OpenAIEmbeddings
@@ -60,13 +61,20 @@ def query_rag(question: str):
         print(f"[EXCEPTION in query_rag] {e}")
         return "An error occurred while answering the question.", []
 
+def smart_truncate(text, limit=400):
+    text = re.sub(r'\s+', ' ', text.strip())
+    if len(text) <= limit:
+        return text
+    cutoff = text[:limit].rfind('.')
+    if cutoff == -1 or cutoff < 100:
+        return text[:limit] + "..."
+    return text[:cutoff + 1] + "..."
+
 def format_sources(docs):
     sources = []
     for i, doc in enumerate(docs[:3]):
         page = doc.metadata.get("page", "?")
-        snippet = doc.page_content.replace("\n", " ").replace("\r", " ").replace("\t", " ").replace("\f", " ").strip()
-        if len(snippet) > 200:
-            snippet = snippet[:200] + "..."
+        cleaned_text = doc.page_content.replace("\n", " ").replace("\r", " ").replace("\t", " ").replace("\f", " ")
+        snippet = smart_truncate(cleaned_text)
         sources.append(f"📄 Page {page} — {snippet}")
     return sources
-
